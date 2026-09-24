@@ -106,13 +106,20 @@ $this->params['breadcrumbs'][] = $this->title;
                                     <?php if (!$mes['items']): ?>
                                         <span class="detalle-item">—</span>
                                     <?php else: ?>
-                                        <?php foreach ($mes['items'] as $item): ?>
-                                            <div class="detalle-item">
-                                                <?= Html::encode($item['nombre']) ?>
-                                                (cuota <?= $item['numero'] ?>/<?= $item['cantidad_cuotas'] ?>)
-                                                — <?= Prestamo::formatearMoneda($item['monto']) ?>
+                                        <details class="cuota-detalle-toggle">
+                                            <summary class="btn btn-sm btn-outline-secondary">
+                                                Ver detalle (<?= count($mes['items']) ?>)
+                                            </summary>
+                                            <div class="mt-2">
+                                                <?php foreach ($mes['items'] as $item): ?>
+                                                    <div class="detalle-item">
+                                                        <?= Html::encode($item['nombre']) ?>
+                                                        (cuota <?= $item['numero'] ?>/<?= $item['cantidad_cuotas'] ?>)
+                                                        — <?= Prestamo::formatearMoneda($item['monto']) ?>
+                                                    </div>
+                                                <?php endforeach; ?>
                                             </div>
-                                        <?php endforeach; ?>
+                                        </details>
                                     <?php endif; ?>
                                 </td>
                                 <td class="total-mes"><?= Prestamo::formatearMoneda($mes['total']) ?></td>

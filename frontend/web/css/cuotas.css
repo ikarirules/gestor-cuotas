@@ -5,12 +5,25 @@
  * layouts/main.php que setea data-bs-theme según el sistema).
  */
 
+body {
+    background-color: #eef1f6;
+}
+
+[data-bs-theme="dark"] body {
+    background-color: var(--bs-tertiary-bg);
+}
+
 [data-bs-theme="dark"] .footer {
     background-color: var(--bs-tertiary-bg);
 }
 
 .prestamo-index .card {
     border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .07);
+}
+
+[data-bs-theme="dark"] .prestamo-index .card {
+    box-shadow: none;
 }
 
 .prestamo-index .card-body {
@@ -172,6 +185,20 @@
 .cuota-calendario .detalle-item {
     color: var(--bs-secondary-color);
     font-size: 0.8rem;
+}
+
+/* El detalle de un mes queda oculto hasta que se pide con el boton */
+.cuota-detalle-toggle summary.btn {
+    list-style: none;
+    white-space: nowrap;
+}
+
+.cuota-detalle-toggle summary.btn::-webkit-details-marker {
+    display: none;
+}
+
+.cuota-detalle-toggle summary.btn::marker {
+    content: "";
 }
 
 /* Mobile: apilar acciones y reducir paddings */
