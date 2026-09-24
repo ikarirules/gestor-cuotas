@@ -1,0 +1,54 @@
+PROYECTO: gestor-cuotas (Yii2 Advanced)
+Ubicacion: C:\wamp64\www\gestor-cuotas
+
+ACCESO WEB
+- Frontend (publico): http://localhost/gestor-cuotas/frontend/web/
+- Backend (panel / gestor de usuarios): http://localhost/gestor-cuotas/backend/web/
+
+USUARIO ADMIN (backend)
+- Usuario: admin
+- Email: david.diaz@xnlatam.com
+- Password: ver notas del chat / la establecida al crearlo. CAMBIAR apenas se entre al panel (Usuarios > Editar admin > completar campo contrasena).
+
+BASE DE DATOS
+- Host: fedped.com
+- Puerto: 33006
+- Usuario: root
+- Base de datos: gestor_cuotas
+- Password y config completa de conexion: common/config/main-local.php (no se repite aca por seguridad)
+
+GESTOR DE USUARIOS (backend)
+- Controlador: backend/controllers/UserController.php
+- Vistas: backend/views/user/ (index, create, update, view, _form)
+- Search model: backend/models/UserSearch.php
+- Funciones: listar (con filtros por usuario/email/estado), crear, editar (password opcional, si se deja vacio no se cambia), ver detalle, eliminar (no se puede eliminar el propio usuario logueado).
+- Link "Usuarios" agregado al menu del layout backend/views/layouts/main.php
+
+RELACION CON EL PROYECTO cuenta-cuotas
+- Proyecto original: C:\wamp64\www\cuenta-cuotas (PHP plano, guardado en su propio repo git local, commit inicial 88a7804)
+- Base de datos propia de ese proyecto: cuenta_cuotas (misma instancia MySQL remota, distinta base de datos)
+
+MIS CUOTAS (frontend, por usuario logueado)
+- Cada usuario que se registra (frontend/site/signup, ya venia con Yii2) tiene sus propias cuotas, totalmente separadas de las de otros usuarios.
+- Tabla: prestamo (migracion console/migrations/m260924_171125_create_prestamo_table.php), con columna user_id (FK a user, ON DELETE CASCADE: si se borra un usuario se borran sus cuotas).
+- Modelo: common/models/Prestamo.php (misma logica de calculo que tenia cuenta-cuotas/functions.php: detalle de cuotas pagadas/pendientes, calendario mensual de 6 meses atras + 12 adelante).
+- Controlador: frontend/controllers/PrestamoController.php (accesible solo logueado). Cada accion filtra siempre por user_id = usuario actual; si alguien intenta editar/borrar una cuota ajena por URL, devuelve 404 (probado).
+- Vistas: frontend/views/prestamo/ (index = dashboard con alta+listado+calendario, update = editar).
+- Link "Mis cuotas" agregado al menu del layout frontend/views/layouts/main.php (visible solo logueado).
+- Probado extremo a extremo: dos usuarios de prueba, cada uno solo vio/pudo tocar sus propias cuotas; se limpiaron esos datos de prueba al terminar.
+- 13 cuotas reales migradas desde cuenta_cuotas.prestamos al usuario "david" (id 5).
+
+ESTILOS Y RESPONSIVE
+- CSS propio: frontend/web/css/cuotas.css (registrado en frontend/assets/AppAsset.php). Usa variables de Bootstrap (--bs-*) para que quede sincronizado con el modo claro/oscuro real de Bootstrap.
+- Modo oscuro: frontend/views/layouts/main.php tiene un script que detecta prefers-color-scheme del sistema y pone data-bs-theme="dark" en el <html>, para que Bootstrap cambie todo de forma coherente (evita texto oscuro sobre fondo oscuro).
+- Home: frontend/config/main.php tiene defaultRoute y homeUrl apuntando a prestamo/index (se saco la pagina de bienvenida default de Yii2). SiteController::actionIndex hace goHome().
+- Menu del frontend simplificado: solo "Mis cuotas" (logueado) o "Signup" (invitado).
+
+SEGURIDAD: CAPTCHA
+- Signup (frontend/models/SignupForm.php + views/site/signup.php): captcha agregado (regla ['verifyCode','captcha']).
+- Login del frontend (frontend/models/LoginForm.php, extiende common/models/LoginForm; frontend/controllers/SiteController.php usa esta subclase; views/site/login.php): tambien tiene captcha.
+- El login del backend (admin) NO tiene captcha, se dejo igual que venia.
+
+BRANDING
+- Nombre de la app: "+Cuota" (frontend/config/main.php) y "+Cuota Admin" (backend/config/main.php).
+- Favicon con tematica de tarjeta/dinero: frontend/web/favicon.svg y backend/web/favicon.svg (SVG, referenciado con <link rel="icon"> en todos los layouts, incluido backend/views/layouts/blank.php que usa la pantalla de login del backend).
