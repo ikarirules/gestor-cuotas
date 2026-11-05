@@ -50,6 +50,7 @@ AppAsset::register($this);
     $menuItems = [];
     if (!Yii::$app->user->isGuest) {
         $menuItems[] = ['label' => 'Mis cuotas', 'url' => ['/prestamo/index']];
+        $menuItems[] = ['label' => 'Finalizadas', 'url' => ['/prestamo/finalizadas']];
     }
     if (Yii::$app->user->isGuest) {
         $menuItems[] = ['label' => 'Signup', 'url' => ['/site/signup']];

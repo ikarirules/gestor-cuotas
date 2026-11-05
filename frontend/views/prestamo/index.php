@@ -6,6 +6,7 @@ use yii\bootstrap5\Html;
 /** @var yii\web\View $this */
 /** @var common\models\Prestamo $model */
 /** @var common\models\Prestamo[] $prestamos */
+/** @var int $cantidadFinalizadas */
 /** @var DateTimeImmutable $hoy */
 /** @var array $calendario */
 /** @var int $mesesAtras */
@@ -30,10 +31,16 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <div class="card">
         <div class="card-body">
-            <h2 class="h5 card-title">Cuotas cargadas</h2>
+            <h2 class="h5 card-title">Cuotas activas</h2>
+            <?php if ($cantidadFinalizadas > 0): ?>
+                <p class="text-muted small">
+                    Tenés <?= $cantidadFinalizadas ?> cuota(s) finalizada(s).
+                    <?= Html::a('Ver finalizadas', ['finalizadas']) ?>
+                </p>
+            <?php endif; ?>
 
             <?php if (!$prestamos): ?>
-                <p class="text-muted">Todavía no cargaste ninguna cuota.</p>
+                <p class="text-muted">No tenés cuotas activas.</p>
             <?php else: ?>
                 <?php foreach ($prestamos as $p):
                     $pagadas = $p->contarCuotasPagadas($hoy);
@@ -47,6 +54,9 @@ $this->params['breadcrumbs'][] = $this->title;
                     <div class="cuota-item-header">
                         <div>
                             <span class="cuota-item-nombre"><?= Html::encode($p->nombre) ?></span>
+                            <?php if ($p->getFechaUltimaCuota()->format('Y-m') === $hoy->format('Y-m')): ?>
+                                <span class="badge text-bg-info">Termina este mes</span>
+                            <?php endif; ?>
                             <span class="cuota-item-sub">
                                 desde <?= Html::encode(Prestamo::formatearMes($fechaInicio)) ?>
                                 · <?= Prestamo::formatearMoneda((float) $p->monto_cuota) ?> x <?= $total ?> cuotas
@@ -115,8 +125,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                                     <div class="detalle-item">
                                                         <?= Html::encode($item['nombre']) ?>
                                                         (cuota <?= $item['numero'] ?>/<?= $item['cantidad_cuotas'] ?>)
-                                                        — <?= Prestamo::formatearMoneda($item['monto']) ?>
-                                                    </div>
+                                                        — <?= Prestamo::formatearMoneda($item['monto']) ?>                                                    </div>
                                                 <?php endforeach; ?>
                                             </div>
                                         </details>

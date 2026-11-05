@@ -98,6 +98,25 @@ class Prestamo extends ActiveRecord
     }
 
     /**
+     * Fecha de vencimiento de la última cuota.
+     */
+    public function getFechaUltimaCuota(): DateTimeImmutable
+    {
+        $cuotas = max(1, (int) $this->cantidad_cuotas);
+
+        return (new DateTimeImmutable($this->fecha_primera_cuota))->modify('+' . ($cuotas - 1) . ' months');
+    }
+
+    /**
+     * Una cuota está finalizada cuando su última cuota venció en un mes anterior
+     * al actual. Las que terminan este mes todavía se consideran activas.
+     */
+    public function estaFinalizada(DateTimeImmutable $hoy): bool
+    {
+        return $this->getFechaUltimaCuota()->format('Y-m') < $hoy->format('Y-m');
+    }
+
+    /**
      * Arma el calendario mensual sumando, para cada mes del rango, el total
      * a pagar entre todos los préstamos recibidos (ya filtrados por usuario).
      *

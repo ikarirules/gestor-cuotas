@@ -63,11 +63,15 @@ class PrestamoController extends Controller
         $hoy = new DateTimeImmutable('today');
         $mesesAtras = 6;
         $mesesAdelante = 12;
+        // El calendario usa todas las cuotas para que los meses pasados muestren lo que se pagó.
         $calendario = Prestamo::calcularCalendarioMensual($prestamos, $hoy, $mesesAtras, $mesesAdelante);
+
+        $activos = array_values(array_filter($prestamos, fn(Prestamo $p) => !$p->estaFinalizada($hoy)));
+        $cantidadFinalizadas = count($prestamos) - count($activos);
 
         $totalPagado = 0.0;
         $totalRestante = 0.0;
-        foreach ($prestamos as $p) {
+        foreach ($activos as $p) {
             $pagadas = $p->contarCuotasPagadas($hoy);
             $totalPagado += $pagadas * (float) $p->monto_cuota;
             $totalRestante += (max(0, (int) $p->cantidad_cuotas - $pagadas)) * (float) $p->monto_cuota;
@@ -75,13 +79,41 @@ class PrestamoController extends Controller
 
         return $this->render('index', [
             'model' => $model,
-            'prestamos' => $prestamos,
+            'prestamos' => $activos,
+            'cantidadFinalizadas' => $cantidadFinalizadas,
             'hoy' => $hoy,
             'calendario' => $calendario,
             'mesesAtras' => $mesesAtras,
             'mesesAdelante' => $mesesAdelante,
             'totalPagado' => $totalPagado,
             'totalRestante' => $totalRestante,
+        ]);
+    }
+
+    /**
+     * Listado de las cuotas cuya última cuota venció en un mes anterior al actual.
+     */
+    public function actionFinalizadas()
+    {
+        $hoy = new DateTimeImmutable('today');
+
+        $prestamos = array_filter(
+            Prestamo::find()->where(['user_id' => Yii::$app->user->id])->all(),
+            fn(Prestamo $p) => $p->estaFinalizada($hoy)
+        );
+
+        // Las que terminaron más recientemente primero.
+        usort($prestamos, fn(Prestamo $a, Prestamo $b) => $b->getFechaUltimaCuota() <=> $a->getFechaUltimaCuota());
+
+        $totalPagado = 0.0;
+        foreach ($prestamos as $p) {
+            $totalPagado += (int) $p->cantidad_cuotas * (float) $p->monto_cuota;
+        }
+
+        return $this->render('finalizadas', [
+            'prestamos' => $prestamos,
+            'hoy' => $hoy,
+            'totalPagado' => $totalPagado,
         ]);
     }
 
@@ -114,7 +146,7 @@ class PrestamoController extends Controller
         $model->delete();
         Yii::$app->session->setFlash('success', 'Cuota eliminada.');
 
-        return $this->redirect(['index']);
+        return $this->redirect($this->request->referrer ?: ['index']);
     }
 
     /**
